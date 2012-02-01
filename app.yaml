@@ -1,0 +1,25 @@
+application: rm-rfslash
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /
+  script: index.py
+
+- url: /index\.html
+  script: index.py
+
+- url: /google-code-prettify
+  static_dir: google-code-prettify
+
+- url: /post/.*
+  script: index.py
+
+- url: /favicon\.ico
+  static_files: img/favicon.ico
+  upload: img/favicon.ico
+
+- url: /img/(.*)/(.*\.(gif|png|jpg|ico))
+  static_files: img/\1/\2
+  upload: img/.*/(.*\.(gif|png|jpg|ico))

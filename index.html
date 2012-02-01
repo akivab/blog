@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <link href='http://fonts.googleapis.com/css?family=Ropa+Sans' rel='stylesheet' type='text/css'>
+    <title>{{title}}</title>
+    <style>
+      div#main { width: 900px; margin: auto; }
+      h1, h2, h3, a { font-family: 'Ropa Sans' }
+      a { margin-left: 20px; margin-top: 0px;}
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <h1>rm -rf /</h1>
+      <h2>thoughts + activities by akiva</h2>
+      <div id="thoughts">
+        <h3>thoughts</h3>
+        {% for file in files %}
+        <a href="/post/{{file}}">{{file}}</a><br/>
+        {% endfor %}
+      </div>
+
+      <div id="activities">
+        <h3>activities</h3>
+        <a href="http://qoobster.com">Qoobster</a><br/>
+        <a href="http://wesosmart.com">WeSoSmart</a><br/>
+        <a href="http://palmyrainmotion.com">PalmyraInMotion</a>
+      </div>
+
+      <div id="contact">
+        <h3>contact</h3>
+        <a href="http://twitter.com">@xoob</a>
+      </div>
+    </div>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-28819068-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>

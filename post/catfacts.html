@@ -1,0 +1,318 @@
+<html>
+<head>
+<title>{{title}}</title>
+<link href="/google-code-prettify/src/prettify.css" type="text/css" rel="stylesheet" />
+<link href='http://fonts.googleapis.com/css?family=Ropa+Sans' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="/google-code-prettify/src/prettify.js"></script>
+<style>
+figure, h1, h2, h3, a{ font-family: 'Ropa Sans' }
+div#main{ width: 900px; margin: auto; }
+figure{ margin: 30px; }
+figure img{ max-width: 600px; -webkit-box-shadow: 10px 10px 20px #000;}
+figure figcaption{ width: 600px; padding-top: 25px; margin: auto; position: relative; left: -100px;}
+.contents a:first-child{ font-size: 25px; }
+.contents p{ text-indent: -40px; padding-left: 40px;}
+</style>
+</head>
+<body onload="prettyPrint()">
+<div id="main">
+  {% include "../header.html" %}
+  <h1>cat facts: Behind the Scenes</h1>
+  <h2 id="p0">Contents</h2>
+  <div class="contents"><p><a href="#p1">Introduction</a></p>
+    <p><a href="#p2">Setup:</a> <a href="#p2-1">Introduction</a>, <a href="#p2-2">Text Editor</a>, <a href="#p2-1">Google App Engine</a>, <a href="#p2-1">Twilio</a></p>
+    <p><a href="#p3">Code Overview:</a> <a href="#p3-1">Introduction</a>, <a href="#p3-2">facts.py</a>, <a href="#p3-3">app.yaml</a>, <a href="#p3-4">index.html</a>, <a href="#p3-4">index.py</a></p>
+    <p><a href="#p4">A Deeper Dive into index.py:</a> <a href="#p4-1">imports</a>, <a href="#p4-2">utility functions</a>, <a href="#p4-3">setting up db</a>, <a href="#p4-4">setting up request handler</a>, <a href="#p4-5">sanitizing and checking input</a>, <a href="#p4-6">setting up people to text</a>, <a href="#p4-7">texting a person</a></p>
+    <p><a href="#p5">Conclusion</a></p>
+    <p><a href="#p6">Additional Resources</a></p>
+  </div>
+
+  <h2 id="p1">Introduction</h2>
+  <p>I created <a href="http://cat-facts.appspot.com">cat-facts.appspot.com</a> in response to a terrific post on <a href="http://www.reddit.com/r/funny/comments/owx3v/so_my_little_cousin_posted_on_fb_that_he_was/">reddit</a> (see image).</p>
+  <figure>
+    <img src="http://i.imgur.com/rsQ93.png" />
+    <figcaption>The original cat facts; <code class="prettyprint">&lt;reply 'Tyxt33358dggyf' to cancel&gt;</code></figcaption>
+  </figure>
+  <p>Many LOLs were had, and I wanted people to be able to bring out their inner "frackyou". My goal was simple: let users sign up their own friends to receive facts about cats from a "cat fact" service. I was reading reddit on my Macbook, a computer I had never used for web programming before. It was a unique opportunity to start from scratch to build a website without any prior tools. I had no <a href="http://www.eclipse.org/">Eclipse</a>, no <a href="http://www.gimp.org/">GIMP</a>, and a foreign looking <a href="http://smokingapples.com/software/tutorials/mac-terminal-tips/">Terminal</a>. Within a few hours, I was up and running using App Engine, TextMate, Twilio, and a bunch of pics of cats from <a href="http://placekitten.com/">placekitten.com</a>.</p>
+  <figure>
+    <img src="{{img_folder}}/closing_time.png" />
+    <figcaption>Twilio account without SMS's</figcaption>
+  </figure>
+  <p>Building an application that sends or receives texts might seem really hard (some might think you needed an <a href="http://www.asterisk.org/">Asterisk</a> server). Luckily, <a href="http://twilio.com">Twilio</a> exists, making it stupid simple for anybody to build a service that responds to texts or calls (or sends them). (I'll talk about setting that up and using it a bit later).
+    <figure>
+      <img src="{{img_folder}}/catfactsvisitors.png" />
+      <figcaption>5,245 visitors on the first day, from America alone</figcaption>
+    </figure>
+  <p>I launched my cat facts app the same night frackyou's post had hit the front page. My app received over 20,000 visits in its first day live. People were finally able to send their loved ones facts about kittens.</p>
+  <figure>
+    <img src="{{img_folder}}/activity.png" />
+    <figcaption>Up to 1.25 requests/second at the peak</figcaption>
+  </figure>
+
+  <h2 id="p2">Setup</h2>
+  <h3 id="p2-1">Introduction</h3>
+  <p>cat facts was built on a pretty slim web stack (a "web stack" is a set of technologies that will let you build a web site). I used only three tools: <a href="#p2-2">a text editor</a>, <a href="#p2-3">Google App Engine</a>, and <a href="#p2-4">Twilio</a>.</p>
+  <h3 id="p2-2">A Text Editor</h3>
+  <p>For most coding, a simple text editor will be your greatest friend. I usually code with emacs in Linux, but I was stuck at home with a shiny Macbook, so I used the shiny text editor, TextMate. Here's what will make it a lot easier to build a webapp using Google App Engine and Twilio without the hassle of installing and configuring an Interactive Design Editor (or IDE) like Eclipse. Linux users should learn to code in emacs, vi, pico, or gedit. For everyone else, use a standard text editor from below.</p>
+<ul>
+  <li>For Windows <a href="http://www.textpad.com/">TextPad</a> is a great, free tool</li>
+  <li>For Macs, <a href="http://macromates.com/">TextMate</a> is a great editor, but it only comes with a 30 day free trial (I used the free version for this project). I also really like <a href="http://www.barebones.com/products/textwrangler/">TextWrangler</a></li>
+</ul>
+
+<h3 id="p2-3">Google App Engine</h3>
+  <p>Google App Engine is a terrific way to launch a website with the least headache possible. You sign up and get a free subdomain, free hosting, and awesome scaling abilities right off the bat. Compare it to its biggest competitor, <a href="http://aws.amazon.com/">Amazon Web Services</a>: Google doesn't require you to give it your credit card to start, lets you have a sharable domain, and lets you focus on code design. The best part? If you need to scale later, you can pay for only the resources you are really using up on Google's machines.</p>
+<figure>
+  <img src="{{img_folder}}/appengine.png" />
+  <figcaption>Sign up for Google App Engine at <a href="http://appspot.com">appspot.com</a></figcaption>
+</figure>
+  <p>I downloaded the python SDK of Google App Engine for the mac and got a subdomain at <a href="http://appspot.com">appspot.com</a>. I saw that cat-facts.appspot.com was available and instantly had a recognizable and usable domain for my service.</p>
+  <p>If you're really new to python, you should check out <a href="http://www.learnpython.org/">Learnpython.org</a>, a site that has some great lessons on learning python interactively (to beef up more general coding skills, also check out <a href="http://www.codecademy.com/">Codecademy</a>).</p>
+  <p>Finally, get up to speed with the awesome tools Google App Engine provides for launching apps at <a href="http://code.google.com/appengine/docs/python/gettingstarted/">their online tutorial</a></p>
+  <h3 id="p2-4">Twilio</h3>
+  <p>Twilio is the easiest service to send texts and calls (and receive them) automatically. <a href="http://twilio.com">Twilio</a> is great; not only do they give you a python library that simplifies everything down to one function call, but they give you $30 free. That means you can buy a number and have enough money left over to send $29 worth of texts (at a penny a text, that's 2900 texts. I ended up sending >18k texts).</p>
+  <figure>
+    <img src="{{img_folder}}/managing_numbers.png" />
+    <figcaption>Buying a phone number only costs $1, a small fee compared to the free $30 Twilio gives you for signing up.</figcaption>
+  </figure>
+  <figure>
+    <img src="{{img_folder}}/twilio_github_1.png" />
+    <figcaption>Go to Twilio's Github page to download the Twilio directory (with the library for making Twilio calls.)</figcaption>
+  </figure>
+  <h2 id="p3">An Overview of the Code</h2>
+  <h3 id="p3-1">Introduction</h3>
+  There were only four files created to run this application: <a href="#p3-2">facts.py</a>, <a href="#p3-3">app.yaml</a>, <a href="#p3-4">index.py</a>, and <a href="#p3-5">index.html</a>. We also needed to include a folder, from twilio, in the same folder where these four files were, so we could access the twilio libraries. Downloading this directory was straightforward; check out <a href="https://github.com/twilio/twilio-python">https://github.com/twilio/twilio-python</a> for detailed instructions.
+  <figure>
+    <img src="{{img_folder}}/catfacts_folder.png" />
+    <figcaption>Only 5 items were in the catfacts/ directory.</figcaption>
+  </figure>
+  <h3 id="p3-2">facts.py</h3>
+  I started by writing up a small python class called facts.py. It contained only one function, catfacts(), which when called, returned a random cat fact.
+  <pre class="prettyprint">
+from random import choice
+
+def catfacts():
+  facts = ["cat fact #1", ..., "cat fact #200"]
+  return choice(facts)
+</pre>
+
+  <h3 id="p3-3">app.yaml</h3>
+  <p>Next, I wrote up the app.yaml file. This is the file used by Google App Engine to direct incoming requests. I figured I could send all requests to a single python class (called <a href="#p3-5">index.py</a>) and this would handle everything.</p>
+  <pre class="prettyprint">
+application: cat-facts
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /.*
+  script: index.py
+</pre>
+
+  <h3 id="p3-4">index.html</h3>
+  <p>I had to create a Django template (which would be used to show something on the frontend to cat fact fanatics). I kept it simple: a form, to get the phone number, a few kitten pictures from <a href="http://placekitten.com">placekitten.com</a>, and a notice to people how they could stop getting cat facts as well as how they could contact me.</p>
+
+  <p>For those unfamiliar with Django, the <pre>{% templatetag openblock %} if condition1 {% templatetag closeblock %} X {% templatetag openblock %} else {% templatetag closeblock %} Y {% templatetag openblock %} endif {% templatetag closeblock %}</pre> tags are used to show some snippet of HTML in only certain circumstances (i.e. print X if condition1 holds). More information about Django is available at <a href="https://docs.djangoproject.com/en/1.3/">their website</a>, but really only a few Django idioms need be memorized to build web pages with App Engine. At the bottom of the HTML is a snippet of code to provide me with some sweet <a href="http://www.google.com/analytics/">Google analytics</a>.</p>
+  <pre class="prettyprint">
+&lt;html&gt;<br/>&nbsp;&nbsp;&lt;head&gt;&lt;title&gt;cat facts for Your Phone!&lt;/title&gt;&lt;/head&gt;<br/>&nbsp;&nbsp;&lt;body&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;h1&gt;cat facts&lt;/h1&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2&gt;Add your number to get a cat fact every 4 hours (for 24 hours of cat loving fun)!&lt;/h2&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;{% templatetag openblock %} if error {% templatetag closeblock %}<br/>&nbsp;&nbsp;&nbsp;&nbsp;You made a Meow-stake. Try again.<br/>&nbsp;&nbsp;&nbsp;&nbsp;{% templatetag openblock %} else {% templatetag closeblock %} {% templatetag openblock %} if return {% templatetag closeblock %}<br/>&nbsp;&nbsp;&nbsp;&nbsp;Added {{number}} to cat-facts! Isn't that purrfect.<br/>&nbsp;&nbsp;&nbsp;&nbsp;{% templatetag openblock %} else {% templatetag closeblock %} {% templatetag openblock %} if number {% templatetag closeblock %}<br/>&nbsp;&nbsp;&nbsp;&nbsp;Already added! Thanks anyways.<br/>&nbsp;&nbsp;&nbsp;&nbsp;{% templatetag openblock %} endif {% templatetag closeblock %} {% templatetag openblock %} endif {% templatetag closeblock %} {% templatetag openblock %} endif {% templatetag closeblock %}<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/h2&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;form method=&quot;post&quot; action=&quot;/&quot;&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label for=&quot;number&quot;&gt;phone number:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;input type='text' name='number' /&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/label&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;input type='submit' /&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/form&gt;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src=&quot;http://placekitten.com/g/200/200&quot; /&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src=&quot;http://placekitten.com/g/301/200&quot; /&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src=&quot;http://placekitten.com/g/101/200&quot; /&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;Random fact: {{fact}}&lt;/p&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;text STOP back to us and we'll unsubscribe you!&lt;/p&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;questions? comments? &lt;a href=&quot;http://www.twitter.com/xoob&quot;&gt;xoob&lt;/a&gt;&lt;/p&gt;<br/>&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;script type=&quot;text/javascript&quot;&gt;<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;  var _gaq = _gaq || [];<br/>&nbsp;&nbsp;&nbsp;&nbsp;  _gaq.push(['_setAccount', 'UA-xxxxxxxx-x']);<br/>&nbsp;&nbsp;&nbsp;&nbsp;  _gaq.push(['_trackPageview']);<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;  (function() {<br/>&nbsp;&nbsp;&nbsp;&nbsp;    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;<br/>&nbsp;&nbsp;&nbsp;&nbsp;    ga.src = ('https:' == document.location.protocol ?<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';<br/>&nbsp;&nbsp;&nbsp;&nbsp;    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);<br/>&nbsp;&nbsp;&nbsp;&nbsp;  })();<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/script&gt;<br/>&nbsp;&nbsp;&lt;/body&gt;<br/>&lt;/html&gt;
+  </pre>
+
+  <h3 id="p3-5">index.py</h3>
+  <p>Finally, I wrote the main logic behind the cat facts app. Below is the code in it's entirety; I get to what each line is for in specific detail in <a href="#p4">the next part</a>.</p>
+  <pre class="prettyprint">
+import datetime
+import os id="p2"
+import re
+from google.appengine.ext import db
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
+from google.appengine.ext.webapp.util import run_wsgi_app
+
+from twilio.rest import TwilioRestClient
+from facts import catfacts
+
+MAX_COUNT = 6
+
+def last_time():
+    return datetime.datetime.now() - datetime.timedelta(hours=4)
+
+class Numbers(db.Model):
+    number = db.StringProperty()
+    created = db.DateTimeProperty(auto_now_add=True)
+    last_touched = db.DateTimeProperty(auto_now=True)
+    count = db.IntegerProperty()
+
+class MainPage(webapp.RequestHandler):
+    def get(self):
+        template_values = { 'fact': catfacts() }
+        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        self.response.out.write(template.render(path, template_values))
+
+    def post(self):
+        number=self.request.get('number').strip().replace(" ", "").replace("-","")
+	template_values = { 'return': False, 'number': number, 'error': False }
+        if re.search(r'^\d+$',number) and len(number) == 10:
+            seenBefore = Numbers.gql("WHERE number=:1",number).get()
+            if not seenBefore:
+                newbie = Numbers(number=number, count=1)
+                newbie.put()
+                self.call_people(newbie)
+                template_values['return'] = True
+            else:
+                template_values['return'] = False
+        else:
+            template_values['error'] = True
+        template_values['fact'] = catfacts()
+        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        self.response.out.write(template.render(path, template_values))
+
+    def call_people(self, newbie):
+        self.work_it(newbie)
+	people = Numbers.gql("WHERE last_touched < :1", last_time()).fetch(5)
+	for person in people:
+	    self.work_it(person)
+
+    def call_person(self, person):
+        SIZE = 155
+        fact = catfacts()
+        account = "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx4f"
+        token = "72xxxxxxxxxxxxxxxxxxxxxxxxxxxx3a"
+        client = TwilioRestClient(account, token)
+
+        num_messages = len(fact) / SIZE + 1
+        if num_messages == 1:
+            client.sms.messages.create(to="+1"+person.number, from_="+18053228518",
+                                                 body=fact )
+        else:
+            for i in xrange(num_messages):
+                client.sms.messages.create(to="+1"+person.number, from_="+18053228518",
+                                                 body="%d/%d: %s" % ((i+1),
+						 num_messages, fact[i*155:((i+1)*155)] ))
+	person.count = person.count + 1
+	if person.count >= MAX_COUNT:
+		db.delete(person)
+		return
+	person.put()
+
+application = webapp.WSGIApplication([('/', MainPage)], debug=False)
+
+def main():
+    run_wsgi_app(application)
+
+
+if __name__ == '__main__':
+    main()
+</pre>
+
+  <h2 id="p4">A Deeper Dive into index.py</h2>
+  <h3 id="p4-1">imports</h3>
+  <p>I needed a few libraries to build this app. Among them were the datetime, os, and re modules, which let me work with time, operating system calls, and regular expressions respectively. Next, I imported a few modules that helped me use the App Engine database (<code>google.appengine.ext.db</code>), the App Engine webapp framework (<code>google.appengine.ext.webapp</code>), the Django templating system (<code>google.appengine.ext.webapp.template</code>).</p>
+  <p>From twilio, I only used the TwilioRestClient class in the twilio.rest module (in our <code>twilio/</code> folder). Finally, I imported the catfacts method.</p>
+  <pre class="prettyprint">
+import datetime
+import os
+import re
+from google.appengine.ext import db
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
+from google.appengine.ext.webapp.util import run_wsgi_app
+
+from twilio.rest import TwilioRestClient
+from facts import catfacts
+</pre>
+
+  <h3 id="p4-2">utility functions</h3>
+  <p>In this code, we only needed one utility function, called <code>last_time()</code>, which tells us what the time was four hours ago. This was used by our code to find people in the database that we needed to text with fresh cat facts.</p>
+  <pre class="prettyprint">
+def last_time():
+    return datetime.datetime.now() - datetime.timedelta(hours=4)
+</pre>
+
+<h3 id="p4-3">setting up the db</h3>
+<p>I had pretty simple requirements of the database. For each person, I wanted to remember her number and record the last time I sent her a text. I also kept a field called <code>count</code> that kept a count of how many texts I had sent that person.</p>
+<pre class="prettyprint">
+class Numbers(db.Model):
+    number = db.StringProperty()
+    created = db.DateTimeProperty(auto_now_add=True)
+    last_touched = db.DateTimeProperty(auto_now=True)
+    count = db.IntegerProperty()
+</pre>
+
+<h3 id="p4-4">setting up request handling</h3>
+<p>When requests came in, I wanted to check whether the user was submitting a <code>get</code> or <code>post</code> request. In the case of a <code>get</code> request, I basically rendered index.html, passing in only a template value for the "fact" field (e.g. so that a random fact would appear on the front page).</p>
+<pre class="prettyprint">
+class MainPage(webapp.RequestHandler):
+    def get(self):
+        template_values = { 'fact': catfacts() }
+        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        self.response.out.write(template.render(path, template_values))
+</pre>
+
+<h3 id="p4-5">sanitizing and checking input</h3>
+<p>If a <code>post</code> request came in, I first checked if the "number" field was part of the request (which I get from <code>self.request.get('number')</code>). The number must be 10 digits (without spaces or hyphens) to be submitted to the database (I don't actually worry about whether or not the number is real. Twilio's API handles that part). Then, I make a single call to <code>call_people</code>. Finally, I render a page back to the user to let them know their number has been added (if it has been).</p>
+<pre id="requesthandler" class="prettyprint">
+   def post(self):
+        number=self.request.get('number').strip().replace(" ", "").replace("-","")
+	template_values = { 'return': False, 'number': number, 'error': False }
+        if re.search(r'^\d+$',number) and len(number) == 10:
+            seenBefore = Numbers.gql("WHERE number=:1",number).get()
+            if not seenBefore:
+                newbie = Numbers(number=number, count=1)
+                newbie.put()
+                self.call_people(newbie)
+                template_values['return'] = True
+            else:
+                template_values['return'] = False
+        else:
+            template_values['error'] = True
+        template_values['fact'] = catfacts()
+        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        self.response.out.write(template.render(path, template_values))
+</pre>
+
+<h3 id="p4-6">setting up people to text</h3>
+<p>Rather than run a <a href="http://code.google.com/appengine/docs/python/config/cron.html">cron job</a> for App Engine, I decided it might be quicker and to use a single newbie's request to add a number to both send that newbie a text and some oldies in the database. Thus, I fetched a bunch of people from the database and, along with the newbie, made a call to <code>call_person</code>.</p>
+<pre class="prettyprint">
+    def call_people(self, newbie):
+	self.call_person(newbie)
+	# send 5 texts to people who haven't gotten one in over 4 hours
+	people = Numbers.gql("WHERE last_touched < :1", last_time()).fetch(5)
+	for person in people:
+	    self.call_person(person)
+</pre>
+<h3 id="p4-7">texting a person</h3>
+<p>The <code>call_person</code> method was the real meat of <code>index.py</code>. Check out the <a href="#p5">additional resources</a> for a look at how another developer used Twilio with App Engine (his code inspired the design decisions seen here). It turns out, Twilio's texting lets you create 160 character texts at a time. For this reason, I decided to make the <code>SIZE</code> variable equal 155, to be able to add the additional information (in the front of the text) about which part of a long text they were looking at.</p>
+<p>To use the <a href="https://github.com/twilio/twilio-python">TwilioRestClient</a>, we only needed to import the library at the top of our python code, set up the client with a simple call to <code>TwilioRestClient(account, token)</code>, and finally send an SMS message using <code>client.sms.messages.create</code>.</p>
+<pre class="prettyprint">
+    def call_person(self, person):
+        SIZE = 155
+        fact = catfacts()
+        account = "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx4f"
+        token = "72xxxxxxxxxxxxxxxxxxxxxxxxxxxx3a"
+        client = TwilioRestClient(account, token)
+
+        num_messages = len(fact) / SIZE + 1
+        if num_messages == 1:
+            client.sms.messages.create(to="+1"+person.number, from_="+18053228518",
+                                                 body=fact )
+        else:
+            for i in xrange(num_messages):
+                client.sms.messages.create(to="+1"+person.number, from_="+18053228518",
+                                                 body="%d/%d: %s" % ((i+1),
+						 num_messages, fact[i*155:((i+1)*155)] ))
+	person.count = person.count + 1
+	if person.count >= MAX_COUNT:
+	    db.delete(person)
+	    return
+	person.put()
+</pre>
+<h2 id="p5">Conclusion</h2>
+<p>Building this web app was fun and an easy way for me to engage with the terrific community over at reddit. Unfortunately, I quickly ran out of money to keep sending people cat facts for the time being. Still, it was quite simple to get this app up and running in a few hours thanks to App Engine, Twilio, and TextMate. If you have any other questions about the site, or about development in general, contact me at twitter (<a href="http://www.twitter.com/xoob">@xoob</a>).</p>
+
+<h2 id="p6">Additional Resources</h2>
+<ul>
+<li>Another great, simple introduction to using python on Google App Engine, which responds to incoming texts with deep thoughts by Jack Handey <a href="http://www.twilio.com/blog/2011/05/how-to-send-twilio-sms-messages-using-python-on-google-app-engine.html">here</a></li>
+</ul>
+{% include "../footer.html" %}
+</div>
+</body>
+</html>
