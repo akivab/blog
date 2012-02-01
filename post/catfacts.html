@@ -33,7 +33,7 @@ figure figcaption{ width: 600px; padding-top: 25px; margin: auto; position: rela
     <img src="http://i.imgur.com/rsQ93.png" />
     <figcaption>The original cat facts; <code class="prettyprint">&lt;reply 'Tyxt33358dggyf' to cancel&gt;</code></figcaption>
   </figure>
-  <p>Many LOLs were had, and I wanted people to be able to bring out their inner "frackyou". My goal was simple: let users sign up their own friends to receive facts about cats from a "cat fact" service. I was reading reddit on my Macbook, a computer I had never used for web programming before. It was a unique opportunity to start from scratch to build a website without any prior tools. I had no <a href="http://www.eclipse.org/">Eclipse</a>, no <a href="http://www.gimp.org/">GIMP</a>, and a foreign looking <a href="http://smokingapples.com/software/tutorials/mac-terminal-tips/">Terminal</a>. Within a few hours, I was up and running using App Engine, TextMate, Twilio, and a bunch of pics of cats from <a href="http://placekitten.com/">placekitten.com</a>.</p>
+  <p>Many LOLs were had, and I wanted people to be able to bring out their inner "frackyou". My goal was simple: let users sign up their own friends to receive facts about cats from a "cat fact" service (with Twilio came the awesome ability to also make sure people could easily opt out by texting "STOP" back). I was reading reddit on my Macbook, a computer I had never used for web programming before. It was a unique opportunity to start from scratch to build a website without any prior tools. I had no <a href="http://www.eclipse.org/">Eclipse</a>, no <a href="http://www.gimp.org/">GIMP</a>, and a foreign looking <a href="http://smokingapples.com/software/tutorials/mac-terminal-tips/">Terminal</a>. Within a few hours, I was up and running using App Engine, TextMate, Twilio, and a bunch of pics of cats from <a href="http://placekitten.com/">placekitten.com</a>.</p>
   <figure>
     <img src="{{img_folder}}/closing_time.png" />
     <figcaption>Twilio account ready to send SMS's</figcaption>
@@ -69,7 +69,7 @@ figure figcaption{ width: 600px; padding-top: 25px; margin: auto; position: rela
   <p>If you're really new to python, you should check out <a href="http://www.learnpython.org/">Learnpython.org</a>, a site that has some great lessons on learning python interactively (to beef up more general coding skills, also check out <a href="http://www.codecademy.com/">Codecademy</a>).</p>
   <p>Finally, get up to speed with the awesome tools Google App Engine provides for launching apps at <a href="http://code.google.com/appengine/docs/python/gettingstarted/">their online tutorial</a></p>
   <h3 id="p2-4">Twilio</h3>
-  <p>Twilio is the easiest service to send texts and calls (and receive them) automatically. <a href="http://twilio.com">Twilio</a> is great; not only do they give you a python library that simplifies everything down to one function call, but they give you $30 free. That means you can buy a number and have enough money left over to send $29 worth of texts (at a penny a text, that's 2900 texts. I ended up sending >18k texts).</p>
+  <p>Twilio is the easiest service to send texts and calls (and receive them) automatically. <a href="http://twilio.com">Twilio</a> is great; not only do they give you a python library that simplifies everything down to one function call, but they give you $30 free. That means you can buy a number and have enough money left over to send $29 worth of texts (at a penny a text, that's 2900 texts. I ended up sending >18k texts). In addition, subscribers can stop receiving texts by simply texting "STOP" back.</p>
   <figure>
     <img src="{{img_folder}}/managing_numbers.png" />
     <figcaption>Buying a phone number only costs $1, a small fee compared to the free $30 Twilio gives you for signing up.</figcaption>
@@ -306,7 +306,7 @@ class MainPage(webapp.RequestHandler):
 	person.put()
 </pre>
 <h2 id="p5">Conclusion</h2>
-<p>Building this web app was fun and an easy way for me to engage with the terrific community over at reddit. Unfortunately, I quickly ran out of money to keep sending people cat facts for the time being. Still, it was quite simple to get this app up and running in a few hours thanks to App Engine, Twilio, and TextMate. If you have any other questions about the site, or about development in general, contact me at twitter (<a href="http://www.twitter.com/xoob">@xoob</a>).</p>
+<p>Building this web app was fun and an easy way for me to engage with the terrific community over at reddit. It was quite simple to get this app up and running in a few hours thanks to App Engine, Twilio, and TextMate. If you have any other questions about the site, or about development in general, contact me at twitter (<a href="http://www.twitter.com/xoob">@xoob</a>).</p>
 
 <h2 id="p6">Additional Resources</h2>
 <ul>
